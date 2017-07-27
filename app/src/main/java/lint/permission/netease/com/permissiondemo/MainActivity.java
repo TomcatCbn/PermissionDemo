@@ -1,10 +1,13 @@
 package lint.permission.netease.com.permissiondemo;
 
 import android.content.Intent;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+
+import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,6 +27,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkPermission() {
+        File externalStorageDirectory = Environment.getExternalStorageDirectory();
+        externalStorageDirectory = Environment.getExternalStoragePublicDirectory("aaa");
+    }
+
+    private void checkAAPermission() {
 
     }
 }

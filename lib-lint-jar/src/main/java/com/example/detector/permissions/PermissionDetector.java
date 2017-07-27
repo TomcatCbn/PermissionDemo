@@ -24,21 +24,24 @@ import java.util.List;
  * Created by boning on 2017/7/26.
  */
 
-public class CameraPermissionDetector extends Detector implements Detector.JavaPsiScanner {
+public class PermissionDetector extends Detector implements Detector.JavaPsiScanner {
 
-    private static final String ID = "CameraPermissionMissing";
+    private static final String ID = "PermissionMissing";
+    //相机
     private static final String ACTION_CAMERA = "MediaStore.ACTION_IMAGE_CAPTURE";
     private static final String ACTION_CAMERA2 = "android.provider.MediaStore.ACTION_IMAGE_CAPTURE";
+    //读写sd卡
+    private static final String ACTION_SDCARD = "Environment.getExternalStorage";
 
     public static final Issue ISSUE =
             Issue.create(
                     ID,
-                    "When use camera, you should check permission.",
+                    "你所使用的api需要权限，请确保使用前检查了权限",
                     "use PermissionUtil to check permissions",
                     Category.CORRECTNESS,
                     7,
                     Severity.WARNING,
-                    new Implementation(CameraPermissionDetector.class,
+                    new Implementation(PermissionDetector.class,
                             EnumSet.of(Scope.JAVA_FILE))
             );
 
@@ -65,15 +68,19 @@ public class CameraPermissionDetector extends Detector implements Detector.JavaP
             return;
         }
 
-        boolean callCamera = text.contains(ACTION_CAMERA) || text.contains(ACTION_CAMERA2);
-        if (callCamera) {
+        boolean callNeedPermission =
+                        text.contains(ACTION_CAMERA)
+                                || text.contains(ACTION_CAMERA2)
+                                || text.contains(ACTION_SDCARD);
+
+        if (callNeedPermission) {
             PsiMethod method = PsiTreeUtil.getParentOfType(callExpression, PsiMethod.class, true);
             if (method != null) {
                 MethodCallChecker visitor = new MethodCallChecker(callExpression);
                 method.accept(visitor);
                 boolean result = visitor.checksPermission();
                 if (!result) {
-                    context.report(ISSUE, callExpression, context.getLocation(callExpression), "访问相机，需要检查权限");
+                    context.report(ISSUE, callExpression, context.getLocation(callExpression), "使用前请检查权限");
                 }
             }
         }
